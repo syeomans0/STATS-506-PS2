@@ -1,0 +1,208 @@
+---
+title: "PS2 506 Yeomans"
+author: "Sydney Yeomans"
+format:
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Problem 1
+
+Consider a 1-dimensional random walk with the following rules:
+
+1. Start at 0.
+2. At each step, move $+1$ or $-1$ with $50$/$50$ probability.
+3. If $+1$ is chosen, $5\%$ of the time move $+10$ instead.
+4. If $-1$ is chosen, $20\%$ of the time move $-3$ instead.
+5. Repeat steps $2$ - $4$, $n$ times.
+
+Write a function to determine the end position of this random walk.
+
+```{r}
+#| echo: true
+#' Function that creates 1-dimensional random walk rules listed above.
+#'
+#' @param : The number of steps
+#' @return : The final position of the walk
+random_walk <- function(n) {
+  initial_step <- 0 
+  for (i in 1:n) {}
+}
+```
+
+a. Implement the random walk in these three versions: 1. using a loop, 2. using built-in R vectorized functions. (Using no loops.), 3. Implement the random walk using one of the `apply` functions. 
+
+```{r}
+#| echo: true
+
+```
+
+b. Demonstrate that the three versions can give the same result. Show this for both $n=10$ and $n=100$. (You will need to add a way to control the randomization.)
+
+```{r}
+#| echo: true
+
+```
+
+c. Use the `microbenchmark` package to clearly demonstrate the speed of the implementations. Compare performance with a low input (1,000) and a large input (100,000). Discuss the results.
+
+```{r}
+install.packages("microbenchmark")
+```
+
+```{r}
+#| echo: true
+library("microbenchmark")
+
+```
+
+d. What is the probability that the random walk ends at 0 if the number of steps is $10$? $100$? $1000$? Defend your answers with evidence based upon a Monte Carlo simulation.
+
+```{r}
+#| echo: true
+
+```
+
+
+## Problem 2
+
+The number of cars passing an intersection is a classic example of a Poisson distribution. At a particular intersection, Poisson is an appropriate distribution most of the time, but during rush hours (hours of 8am and 5pm) the distribution is really normally distributed with a much higher mean.
+
+Using a Monte Carlo simulation, estimate the average number of cars that pass an intersection under the following assumptions:
+
+1. From midnight until 7 AM, the distribution of cars is Poisson with mean $1$.
+2. From 9am to 4pm, the distribution of cars is Poisson with mean $8$.
+3. From 6pm to 11pm, the distribution of cars is Poisson with mean $12$.
+4. During rush hours (8am and 5pm), the distribution of cars is Normal with mean $60$ and variance $12$.
+
+Accomplish this without using any loops.
+
+```{r}
+#| echo: true
+library(stats)
+set.seed(23)
+#rpois(n, lambda = 1): 00:00 - 07:00
+#rnorm(n, mean = 60, sd = 12): 08:00 - 17:00
+#rpois(n, lambda = 8): 09:00 - 16:00
+#rpois(n, lambda = 12): 18:00 - 23:00
+n <- 10000
+midnight_to_seven <- rpois(n, lambda = 1)
+rush_hour <- rnorm(n, mean = 60, sd = 12)
+nine_to_four <- rpois(n, lambda = 8)
+six_to_eleven <- rpois(n, lambda = 12)
+
+total_car_pass <- midnight_to_seven + rush_hour + nine_to_four + six_to_eleven
+mean(total_car_pass)
+```
+
+
+## Problem 3
+
+Use the following code to download the YouTube Superbowl commercials data:
+
+```{r}
+#| echo: true
+youtube <- read.csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-02/youtube.csv')
+```
+
+The research question for this project is to decide which of several attributes, if any, is associated with increased YouTube engagement metrics.
+
+a. Remove any column that might uniquely identify a commercial. This includes but isn’t limited to things like brand, any URLs, the YouTube channel, or when it was published.
+
+Report the dimensions of the data after removing these columns.
+
+```{r}
+#| echo: true
+dim(youtube)
+
+#remove any columns that give away what it is
+youtube <- subset(youtube, 
+            select = -c(brand, superbowl_ads_dot_com_url, youtube_url, 
+                      id, etag, published_at, title, description))
+
+dim(youtube)
+```
+
+I got rid of these variables because I think they are the only ones that could be used to figure out what the commercial is.
+
+b. For each of the following variables, examine their distribution. Determine whether i) The variable could be used as is as the outcome in a linear regression model, ii) The variable can use a transformation prior to being used as the outcome in a linear regression model, or iii) The variable would not be appropriate to use as the outcome in a linear regression model.
+
+For each variable (view counts, like counts, dislike counts, favorite counts, comment counts), report which category it falls in. If it requires a transformation, carry such a transformation out and use that transformation going forward.
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+```{r}
+#| echo: true
+
+```
+
+
+c. For each variable in part b. that are appropriate, fit a linear regression model predicting them based upon each of the seven binary flags for characteristics of the ads, such as whether it is funny. Control for year as a continuous covariate.
+
+Discuss the results. Identify the direction of any statistically significant results.
+
+```{r}
+#| echo: true
+
+```
+
+d. Consider only the outcome of view counts. Calculate $\hat{\beta}_1$ manually (without using `lm`) by first creating a proper design matrix, then using matrix algebra to estimate $\beta$. Confirm that you get the same result as `lm` did in part c.
+
+```{r}
+#| echo: true
+
+```
+
