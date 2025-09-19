@@ -118,8 +118,15 @@ dim(youtube)
 
 #remove any columns that give away what it is
 youtube <- subset(youtube, 
-            select = -c(brand, superbowl_ads_dot_com_url, youtube_url, 
-                      id, etag, published_at, title, description))
+            select = -c(brand, 
+                        superbowl_ads_dot_com_url, 
+                        youtube_url, 
+                        id, 
+                        etag, 
+                        published_at, 
+                        title, 
+                        description, 
+                        channel_title))
 
 dim(youtube)
 ```
@@ -130,64 +137,36 @@ b. For each of the following variables, examine their distribution. Determine wh
 
 For each variable (view counts, like counts, dislike counts, favorite counts, comment counts), report which category it falls in. If it requires a transformation, carry such a transformation out and use that transformation going forward.
 
-```{r}
-#| echo: true
-
-```
-
+In order to see if these variables are appropriate to use in a linear regression model we want to look at the distribution or density of values in that variable and see if it looks roughly normal, which comes from the fact that ... I will be using histograms because I think they are easier to make and deal with.
 
 ```{r}
 #| echo: true
+hist(youtube$view_count)
 
 ```
-
 
 ```{r}
 #| echo: true
+hist(youtube$like_count)
+```
+```{r}
+#| echo: true
+hist(youtube$dislike_count)
 
 ```
-
 
 ```{r}
 #| echo: true
-
+hist(youtube$favorite_count)
 ```
-
 
 ```{r}
 #| echo: true
-
+hist(youtube$comment_count)
 ```
+From the histograms we can see this distribution for `{r} view_count`, `{r} like_count`, `{r} dislike_count`, and `{r} comment_count` are all heavily right skewed with some potential outliers at very high values along the x-axis. Since these are heavily skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the `{r} favorite_count` is the only odd one out from this group of variables. This distribution looks to be...
 
-
-```{r}
-#| echo: true
-
-```
-
-
-```{r}
-#| echo: true
-
-```
-
-
-```{r}
-#| echo: true
-
-```
-
-
-```{r}
-#| echo: true
-
-```
-
-
-```{r}
-#| echo: true
-
-```
+The histogram with the log transformation looks very symmetric and bell-shaped so we should now be able to use it for linear regression. We have to make sure this transformation stays with this going forward so we have to ...
 
 
 c. For each variable in part b. that are appropriate, fit a linear regression model predicting them based upon each of the seven binary flags for characteristics of the ads, such as whether it is funny. Control for year as a continuous covariate.
@@ -196,7 +175,19 @@ Discuss the results. Identify the direction of any statistically significant res
 
 ```{r}
 #| echo: true
-
+#view counts, like counts, dislike counts, favorite counts, comment counts
+view_count_lm <- lm(view_count ~ funny + show_product_quickly 
+                      + patriotic + celebrity + danger + animals 
+                      + use_sex + year, data = youtube)
+like_count_lm <- lm(like_count ~ funny + show_product_quickly 
+                      + patriotic + celebrity + danger + animals 
+                      + use_sex + year, data = youtube)
+dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly 
+                      + patriotic + celebrity + danger + animals 
+                      + use_sex + year, data = youtube)
+comment_count_lm <- lm(comment_count ~ funny + show_product_quickly 
+                      + patriotic + celebrity + danger + animals 
+                      + use_sex + year, data = youtube)
 ```
 
 d. Consider only the outcome of view counts. Calculate $\hat{\beta}_1$ manually (without using `lm`) by first creating a proper design matrix, then using matrix algebra to estimate $\beta$. Confirm that you get the same result as `lm` did in part c.
