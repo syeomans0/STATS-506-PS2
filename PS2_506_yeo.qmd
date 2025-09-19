@@ -164,12 +164,27 @@ hist(youtube$favorite_count)
 #| echo: true
 hist(youtube$comment_count)
 ```
-From the histograms we can see this distribution for `{r} view_count`, `{r} like_count`, `{r} dislike_count`, and `{r} comment_count` are all heavily right skewed with some potential outliers at very high values along the x-axis. Since these are heavily skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the `{r} favorite_count` is the only odd one out from this group of variables. This distribution looks to be...
+From the histograms we can see this distribution for `{r} view_count`, `{r} like_count`, `{r} dislike_count`, and `{r} comment_count` are all heavily right skewed with some potential outliers at very high values along the x-axis. Since these are heavily skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the `{r} favorite_count` is the only odd one out from this group of variables. Looking in the data set we actually see that the only value for favorite count is $0$ or NA, so this one won't be helpful for linear regression. All the other variables should work after a transformation.
 
-The histogram with the log transformation looks very symmetric and bell-shaped so we should now be able to use it for linear regression. We have to make sure this transformation stays with this going forward so we have to ...
+```{r}
+#| echo: true
+#log transformation
+youtube$view_count <- log(youtube$view_count)
+youtube$like_count <- log(youtube$like_count)
+youtube$dislike_count <- log(youtube$dislike_count)
+youtube$comment_count <- log(youtube$comment_count)
+```
+
+```{r}
+#check histogram to see if the transformation worked
+hist(youtube$view_count)
+
+```
+
+The histogram with the log transformation looks very symmetric and bell-shaped so we should now be able to use these variables for linear regression.
 
 
-c. For each variable in part b. that are appropriate, fit a linear regression model predicting them based upon each of the seven binary flags for characteristics of the ads, such as whether it is funny. Control for year as a continuous covariate.
+c. For each variable in part b. that are appropriate, fit a linear regression model predicting them based upon each of the seven binary flags for characteristics of the ads, such as whether it is funny. Control for year as a continuous co-variate.
 
 Discuss the results. Identify the direction of any statistically significant results.
 
