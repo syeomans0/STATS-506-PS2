@@ -48,12 +48,12 @@ b. Demonstrate that the three versions can give the same result. Show this for b
 c. Use the `microbenchmark` package to clearly demonstrate the speed of the implementations. Compare performance with a low input (1,000) and a large input (100,000). Discuss the results.
 
 ```{r}
-install.packages("microbenchmark")
+#install.packages("microbenchmark")
 ```
 
 ```{r}
 #| echo: true
-library("microbenchmark")
+#library("microbenchmark")
 
 ```
 
@@ -164,18 +164,21 @@ hist(youtube$favorite_count)
 #| echo: true
 hist(youtube$comment_count)
 ```
-From the histograms we can see this distribution for `{r} view_count`, `{r} like_count`, `{r} dislike_count`, and `{r} comment_count` are all heavily right skewed with some potential outliers at very high values along the x-axis. Since these are heavily skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the `{r} favorite_count` is the only odd one out from this group of variables. Looking in the data set we actually see that the only value for favorite count is $0$ or NA, so this one won't be helpful for linear regression. All the other variables should work after a transformation.
+From the histograms we can see this distribution for view count, like count, dislike count, and  comment count are all heavily right skewed with some potential outliers at very high values along the x-axis. Since these are heavily skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the favorite count is the only odd one out from this group of variables. Looking in the data set we actually see that the only value for favorite count is $0$ or NA, so this one won't be helpful for linear regression. All the other variables should work after a transformation.
+
 
 ```{r}
 #| echo: true
 #log transformation
 youtube$view_count <- log(youtube$view_count)
-youtube$like_count <- log(youtube$like_count)
-youtube$dislike_count <- log(youtube$dislike_count)
-youtube$comment_count <- log(youtube$comment_count)
+youtube$like_count <- log1p(youtube$like_count)
+youtube$dislike_count <- log1p(youtube$dislike_count)
+youtube$comment_count <- log1p(youtube$comment_count)
 ```
+Note: when I got to running my regressions I was running into this error "Error in lm.fit(x, y, offset = offset, singular.ok = singular.ok, ...) :NA/NaN/Inf in 'y'" and looking at the data set a few of the variables had negative infinity as values so GPT said to use $\log1p()$ instead to fix this.
 
 ```{r}
+#| echo: true
 #check histogram to see if the transformation worked
 hist(youtube$view_count)
 
@@ -191,19 +194,28 @@ Discuss the results. Identify the direction of any statistically significant res
 ```{r}
 #| echo: true
 #view counts, like counts, dislike counts, favorite counts, comment counts
-view_count_lm <- lm(view_count ~ funny + show_product_quickly 
-                      + patriotic + celebrity + danger + animals 
-                      + use_sex + year, data = youtube)
-like_count_lm <- lm(like_count ~ funny + show_product_quickly 
-                      + patriotic + celebrity + danger + animals 
-                      + use_sex + year, data = youtube)
-dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly 
-                      + patriotic + celebrity + danger + animals 
-                      + use_sex + year, data = youtube)
-comment_count_lm <- lm(comment_count ~ funny + show_product_quickly 
-                      + patriotic + celebrity + danger + animals 
-                      + use_sex + year, data = youtube)
+view_count_lm <- lm(view_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+summary(view_count_lm)
 ```
+For the view count, there are no statistically significant results with the seven binary flags for characteristics of the ads.
+
+```{r}
+like_count_lm <- lm(like_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+summary(like_count_lm)
+```
+
+```{r}
+dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+summary(dislike_count_lm)
+```
+
+```{r}
+comment_count_lm <- lm(comment_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+summary(comment_count_lm)
+```
+
+
+
 
 d. Consider only the outcome of view counts. Calculate $\hat{\beta}_1$ manually (without using `lm`) by first creating a proper design matrix, then using matrix algebra to estimate $\beta$. Confirm that you get the same result as `lm` did in part c.
 
