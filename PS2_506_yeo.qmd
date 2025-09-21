@@ -25,10 +25,24 @@ Write a function to determine the end position of this random walk.
 #'
 #' @param : The number of steps
 #' @return : The final position of the walk
+library(stats)
+
 random_walk <- function(n) {
-  initial_step <- 0 
-  for (i in 1:n) {}
+  position <- 0 
+  for (i in 1:n) {
+    step_for <- sample(c(-1,1), size = 1)
+    if (step_for == 1 & runif(1) < 0.05) {
+      step_for <- 10
+    }
+    if (step_for == -1 & runif(1) < 0.20) {
+      step_for <- -3
+    }
+    position <- position + step_for
+  }
+  return(position)
 }
+random_walk(10)
+random_walk(10)
 ```
 
 a. Implement the random walk in these three versions: 1. using a loop, 2. using built-in R vectorized functions. (Using no loops.), 3. Implement the random walk using one of the `apply` functions. 
@@ -103,7 +117,7 @@ nine_to_four_day <- rowSums(nine_to_four_matrix)
 six_to_eleven_matrix <- matrix(rpois(n * 6, lambda = 12), nrow = n, ncol = 6)
 six_to_eleven_day <- rowSums(six_to_eleven_matrix)
 
-
+#8 + 2 + 8 + 6 = 24 check
 total_car_pass <- midnight_to_seven_day + rush_hour_day + nine_to_four_day + six_to_eleven_day
 mean(total_car_pass)
 ```
@@ -237,18 +251,19 @@ For the comment count, there are not any significant results at the $0.05$ cut o
 d. Consider only the outcome of view counts. Calculate $\hat{\beta}_1$ manually (without using `lm`) by first creating a proper design matrix, then using matrix algebra to estimate $\beta$. Confirm that you get the same result as `lm` did in part c.
 
 ```{r}
+#| echo: true
 #use the formula beta = (X^T X)^{-1} X^T y
 #make x matrix
 #keep getting NA for all of them? get rid of the NAs?
 youtube <- na.omit(youtube[, c("funny", 
-                                     "show_product_quickly", 
-                                     "patriotic",
-                                     "celebrity", 
-                                     "danger", 
-                                     "animals", 
-                                     "use_sex", 
-                                     "year",
-                                     "view_count")])
+                                "show_product_quickly", 
+                                "patriotic",
+                                "celebrity", 
+                                "danger", 
+                                "animals", 
+                                "use_sex", 
+                                "year",
+                                "view_count")])
 X <- model.matrix(~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 y <- youtube$view_count
 
