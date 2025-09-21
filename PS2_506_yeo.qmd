@@ -143,8 +143,6 @@ youtube <- subset(youtube,
 dim(youtube)
 ```
 
-I got rid of these variables because I think they are the only ones that could be used to figure out what the commercial is.
-
 b. For each of the following variables, examine their distribution. Determine whether i) The variable could be used as is as the outcome in a linear regression model, ii) The variable can use a transformation prior to being used as the outcome in a linear regression model, or iii) The variable would not be appropriate to use as the outcome in a linear regression model.
 
 For each variable (view counts, like counts, dislike counts, favorite counts, comment counts), report which category it falls in. If it requires a transformation, carry such a transformation out and use that transformation going forward.
@@ -161,6 +159,7 @@ hist(youtube$view_count)
 #| echo: true
 hist(youtube$like_count)
 ```
+
 ```{r}
 #| echo: true
 hist(youtube$dislike_count)
@@ -176,7 +175,7 @@ hist(youtube$favorite_count)
 #| echo: true
 hist(youtube$comment_count)
 ```
-From the histograms we can see this distribution for view count, like count, dislike count, and  comment count are all heavily right skewed with some potential outliers at very high values along the x-axis. Since these are heavily skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the favorite count is the only odd one out from this group of variables. Looking in the data set we actually see that the only value for favorite count is $0$ or NA, so this one won't be helpful for linear regression. All the other variables should work after a transformation.
+From the histograms we can see this distribution for view count, like count, dislike count, and  comment count are all heavily right skewed with some potential outliers at the very high values along the x-axis. Since these are heavily right skewed we should use a log transformation to deal with the extreme values. After this log transformation we should hopefully see something that looks a bit better and more Normal. The histogram for the favorite count is the only odd one out from this group of variables. Looking in the data set we actually see that the only values for favorite count are $0$ and NA, so this one won't be helpful for linear regression. All the other variables should work after the log transformation.
 
 
 ```{r}
@@ -187,6 +186,7 @@ youtube$like_count <- log1p(youtube$like_count)
 youtube$dislike_count <- log1p(youtube$dislike_count)
 youtube$comment_count <- log1p(youtube$comment_count)
 ```
+
 Note: when I got to running my regressions I was running into this error "Error in lm.fit(x, y, offset = offset, singular.ok = singular.ok, ...) :NA/NaN/Inf in 'y'" and looking at the data set a few of the variables had negative infinity as values so GPT said to use $\log1p()$ instead to fix this.
 
 ```{r}
@@ -216,28 +216,43 @@ For the view count, there are no statistically significant results with the seve
 like_count_lm <- lm(like_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 summary(like_count_lm)
 ```
-For like count, there is only one statistically significant variable which is year, not any of the binary flags for the characteristics for the ads. In context this means, ... The danger flag has a p-value of $0.0886$, this doesn't quite meet the $0.05$ significance cut off but it would be significant if we were testing it at the $0.1$ cut off, so I will discuss this too. In context, this means that ...
+For like count, there is only one statistically significant variable at the $0.05$ value which is year, not any of the binary flags for the characteristics for the ads. The danger flag has a p-value of $0.0886$, this doesn't quite meet the $0.05$ significance cut off, but it would be significant if we were testing it at the $0.1$ cut off, so I will discuss this too. In context, this means that ads flagged as dangerous see an increase of $0.63895$ log units in like count, holding all the other characteristics constant. For year, the coefficient of $0.007685$ indicates that each additional year has an increase of $0.07685$ log units in like count, controlling for all other predictors in the model.
 
 ```{r}
 #| echo: true
 dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 summary(dislike_count_lm)
 ```
-For the dislike count, just like the like count, the only significant result is year, if the cutoff is $0.05$. If we went up to the $0.1$ cutoff, patriotic would become significant as well. 
+For the dislike count, just like the like count, the only significant result is year, if the cutoff is $0.05$. If we went up to the $0.1$ cutoff, patriotic would become significant as well. In context, this means that, holding all other characteristics constant, ads flagged as patriotic are associated with an increase of about 0.814 log units in dislike count. For year, the coefficient of $0.09207$ indicates that each additional year has an increase of $0.09207$ log units in dislike count, controlling for all other predictors in the model.
 
 ```{r}
 #| echo: true
 comment_count_lm <- lm(comment_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 summary(comment_count_lm)
 ```
-For the comment count, there are not any significant results at the $0.05$ cut off but there are some at the $0.1$ cut off. The variables significant at the $0.1$ level are patriotic and year. 
+For the comment count, there are not any significant results at the $0.05$ cut off but there are some at the $0.1$ cut off. The variables significant at the $0.1$ level are patriotic and year. Holding all other characteristics constant, ads flagged as patriotic have an increase of about 0.667 log units in comment count. For year, the coefficient of $0.05034$ indicates that each additional year has an increase of $0.05034$ log units in comment count, controlling for all other predictors in the model.
 
 
 
 d. Consider only the outcome of view counts. Calculate $\hat{\beta}_1$ manually (without using `lm`) by first creating a proper design matrix, then using matrix algebra to estimate $\beta$. Confirm that you get the same result as `lm` did in part c.
 
 ```{r}
-#| echo: true
+#use the formula beta = (X^T X)^{-1} X^T y
+#make x matrix
+#keep getting NA for all of them? get rid of the NAs?
+youtube <- na.omit(youtube[, c("funny", 
+                                     "show_product_quickly", 
+                                     "patriotic",
+                                     "celebrity", 
+                                     "danger", 
+                                     "animals", 
+                                     "use_sex", 
+                                     "year",
+                                     "view_count")])
+X <- model.matrix(~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+y <- youtube$view_count
 
+beta_hat_1 <- solve(t(X) %*% X) %*% t(X) %*% y
+beta_hat_1
 ```
-
+This matches the output we got for the linear regression model for view count! I had issues with all the variables being NA, which came from NAs still being present in our predictors so had to drop these (this is done automatically in lm so we have to do it manually). 
