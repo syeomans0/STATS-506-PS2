@@ -83,19 +83,31 @@ Accomplish this without using any loops.
 library(stats)
 set.seed(23)
 #rpois(n, lambda = 1): 00:00 - 07:00
-#rnorm(n, mean = 60, sd = 12): 08:00 - 17:00
+#rnorm(n, mean = 60, sd = 12): 08:00 & 17:00
 #rpois(n, lambda = 8): 09:00 - 16:00
 #rpois(n, lambda = 12): 18:00 - 23:00
-n <- 10000
-midnight_to_seven <- rpois(n, lambda = 1)
-rush_hour <- rnorm(n, mean = 60, sd = 12)
-nine_to_four <- rpois(n, lambda = 8)
-six_to_eleven <- rpois(n, lambda = 12)
+n <- 100000
+#realized this is just one hours rather than the eight I thought it was so I have to use matrices
+midnight_to_seven_matrix <- matrix(rpois(n * 8, lambda = 1), nrow = n, ncol = 8)
+midnight_to_seven_day <- rowSums(midnight_to_seven_matrix)
 
-total_car_pass <- midnight_to_seven + rush_hour + nine_to_four + six_to_eleven
+#rush hour is just two hours, 8 and 17
+rush_hour_matrix <- matrix(rnorm(n * 2, mean = 60, sd = sqrt(12)), nrow = n, ncol = 2)
+#normal gives negative values so we have to deal with this
+rush_hour_matrix <- pmax(rush_hour_matrix, 0)
+rush_hour_day <- rowSums(rush_hour_matrix)
+
+nine_to_four_matrix <- matrix(rpois(n * 8, lambda = 8), nrow = n, ncol = 8)
+nine_to_four_day <- rowSums(nine_to_four_matrix)
+
+six_to_eleven_matrix <- matrix(rpois(n * 6, lambda = 12), nrow = n, ncol = 6)
+six_to_eleven_day <- rowSums(six_to_eleven_matrix)
+
+
+total_car_pass <- midnight_to_seven_day + rush_hour_day + nine_to_four_day + six_to_eleven_day
 mean(total_car_pass)
 ```
-
+The average number of cars that pass by this intersection per day is 264 cars, rounding down from the value we found of $264.04$. 
 
 ## Problem 3
 
@@ -187,7 +199,7 @@ hist(youtube$view_count)
 The histogram with the log transformation looks very symmetric and bell-shaped so we should now be able to use these variables for linear regression.
 
 
-c. For each variable in part b. that are appropriate, fit a linear regression model predicting them based upon each of the seven binary flags for characteristics of the ads, such as whether it is funny. Control for year as a continuous co-variate.
+c. For each variable in part b. that are appropriate, fit a linear regression model predicting them based upon each of the seven binary flags for characteristics of the ads, such as whether it is funny. Control for year as a continuous covariate.
 
 Discuss the results. Identify the direction of any statistically significant results.
 
@@ -200,20 +212,25 @@ summary(view_count_lm)
 For the view count, there are no statistically significant results with the seven binary flags for characteristics of the ads.
 
 ```{r}
+#| echo: true
 like_count_lm <- lm(like_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 summary(like_count_lm)
 ```
+For like count, there is only one statistically significant variable which is year, not any of the binary flags for the characteristics for the ads. In context this means, ... The danger flag has a p-value of $0.0886$, this doesn't quite meet the $0.05$ significance cut off but it would be significant if we were testing it at the $0.1$ cut off, so I will discuss this too. In context, this means that ...
 
 ```{r}
+#| echo: true
 dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 summary(dislike_count_lm)
 ```
+For the dislike count, just like the like count, the only significant result is year, if the cutoff is $0.05$. If we went up to the $0.1$ cutoff, patriotic would become significant as well. 
 
 ```{r}
+#| echo: true
 comment_count_lm <- lm(comment_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
 summary(comment_count_lm)
 ```
-
+For the comment count, there are not any significant results at the $0.05$ cut off but there are some at the $0.1$ cut off. The variables significant at the $0.1$ level are patriotic and year. 
 
 
 
