@@ -26,19 +26,32 @@ Write a function to determine the end position of this random walk.
 #' @param : The number of steps
 #' @return : The final position of the walk
 library(stats)
-
+#seed?
 random_walk <- function(n) {
   position <- 0 
+  
   for (i in 1:n) {
-    step_for <- sample(c(-1,1), size = 1)
-    if (step_for == 1 & runif(1) < 0.05) {
-      step_for <- 10
+    step_for <- sample(c(-1, 1), size = 1)
+    
+    if (step_for == 1) {
+      if (runif(1) < 0.05) {
+        step_for <- 10
+      } else {
+        step_for <- 1
+      }
     }
-    if (step_for == -1 & runif(1) < 0.20) {
-      step_for <- -3
+    
+    if (step_for == -1) {
+      if (runif(1) < 0.20) {
+        step_for <- -3
+      } else {
+        step_for <- -1
+      }
     }
+    
     position <- position + step_for
   }
+  
   return(position)
 }
 random_walk(10)
@@ -49,6 +62,7 @@ a. Implement the random walk in these three versions: 1. using a loop, 2. using 
 
 ```{r}
 #| echo: true
+
 
 ```
 
