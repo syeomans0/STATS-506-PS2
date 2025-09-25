@@ -54,34 +54,101 @@ random_walk <- function(n) {
   
   return(position)
 }
+#not getting the same values as in the problem set? due to randomness?
 random_walk(10)
 random_walk(10)
 ```
+
+
+
 
 a. Implement the random walk in these three versions: 1. using a loop, 2. using built-in R vectorized functions. (Using no loops.), 3. Implement the random walk using one of the `apply` functions. 
 
+Using the loop which is what I did above so just copy/pasting.
+
 ```{r}
 #| echo: true
+#loop is what we just did so just using the same code w/ diff name
+random_walk1 <- function(n) {
+  position <- 0 
+  
+  for (i in 1:n) {
+    step_for <- sample(c(-1, 1), size = 1)
+    
+    if (step_for == 1) {
+      if (runif(1) < 0.05) {
+        step_for <- 10
+      } else {
+        step_for <- 1
+      }
+    }
+    
+    if (step_for == -1) {
+      if (runif(1) < 0.20) {
+        step_for <- -3
+      } else {
+        step_for <- -1
+      }
+    }
+    
+    position <- position + step_for
+  }
+  
+  return(position)
+}
+random_walk1(10)
+random_walk1(1000)
+```
 
+
+Using the built in vectorized functions in R. I used this <https://stackoverflow.com/questions/42453152/multiple-conditional-statements-in-square-brackets> to help me come up with how to use square brackets with conditionals, kinda like we did for the first problem set with the data frame. 
+
+
+```{r}
+#| echo: true
+#built-in R vectorized functions
+random_walk2 <- function(n) {
+  #order doesn't matter, can replace
+  step_for <- sample(c(-1, 1), size = n, replace = TRUE)
+  random_step <- runif(n)
+  #can't use if statements, bc doing multiple values?
+  #same uniform conditions as the loop, conditional check with square bracket 
+  step_for[step_for == 1 & random_step < 0.05]  <- 10
+  step_for[step_for == -1 & random_step < 0.20] <- -3
+  #add up all the steps in the walk to get where the final position is
+  sum(step_for)
+}
+random_walk2(10)
+random_walk2(1000)
+```
+
+
+
+Using the apply function.
+
+```{r}
+#using one of the apply functions
 
 ```
+
+
+
 
 b. Demonstrate that the three versions can give the same result. Show this for both $n=10$ and $n=100$. (You will need to add a way to control the randomization.)
 
 ```{r}
-#| echo: true
+#add a seed in this part to control for random
 
 ```
 
 c. Use the `microbenchmark` package to clearly demonstrate the speed of the implementations. Compare performance with a low input (1,000) and a large input (100,000). Discuss the results.
 
 ```{r}
-#install.packages("microbenchmark")
+install.packages("microbenchmark")
 ```
 
 ```{r}
-#| echo: true
-#library("microbenchmark")
+library("microbenchmark")
 
 ```
 
