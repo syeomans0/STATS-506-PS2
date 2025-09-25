@@ -67,29 +67,31 @@ a. Implement the random walk in these three versions: 1. using a loop, 2. using 
 Using the loop which is what I did above so just copy/pasting.
 
 ```{r}
-#| echo: true
 #loop is what we just did so just using the same code w/ diff name
 random_walk1 <- function(n) {
   position <- 0 
   
+  set.seed(23)
+  rand <- runif(n)
+  # print(rand)
   for (i in 1:n) {
     step_for <- sample(c(-1, 1), size = 1)
-    
-    if (step_for == 1) {
-      if (runif(1) < 0.05) {
-        step_for <- 10
-      } else {
-        step_for <- 1
-      }
-    }
-    
-    if (step_for == -1) {
-      if (runif(1) < 0.20) {
-        step_for <- -3
-      } else {
-        step_for <- -1
-      }
-    }
+     if (step_for == 1) {
+       if (rand[i] < 0.05) {
+         step_for <- 10
+       } else {
+         step_for <- 1
+       }
+     }
+    # rand2 <- runif(1)
+    # print(rand2)
+     if (step_for == -1) {
+       if (rand[i] < 0.20) {
+         step_for <- -3
+       } else {
+         step_for <- -1
+       }
+     }
     
     position <- position + step_for
   }
@@ -97,6 +99,7 @@ random_walk1 <- function(n) {
   return(position)
 }
 random_walk1(10)
+
 random_walk1(1000)
 ```
 
@@ -105,19 +108,26 @@ Using the built in vectorized functions in R. I used this <https://stackoverflow
 
 
 ```{r}
-#| echo: true
 #built-in R vectorized functions
 random_walk2 <- function(n) {
   #order doesn't matter, can replace, have to do n time
-  step_for <- sample(c(-1, 1), size = n, replace = TRUE)
+  set.seed(23)
   random_step <- runif(n)
+  step_for <- sample(c(-1, 1), size = n, replace = TRUE)
+  # print(random_step)
+  #random_step2 <- runif(n)
+  #print(random_step2)
+#0.8659590 0.7014217 0.3904731 0.3147697 0.8459473 0.1392785 0.5181206 0.5935508 0.9424617 0.6280196
   #can't use if statements, bc doing multiple values?
   #same uniform conditions as the loop, conditional check with square bracket 
   step_for[step_for == 1 & random_step < 0.05]  <- 10
+  step_for[step_for == 1 & random_step >= 0.05]  <- 1
   step_for[step_for == -1 & random_step < 0.20] <- -3
+  step_for[step_for == -1 & random_step >= 0.20]  <- -1
   #add up all the steps in the walk to get where the final position is
   sum(step_for)
 }
+#
 random_walk2(10)
 random_walk2(1000)
 ```
@@ -130,19 +140,21 @@ Using the apply function.
 #using one of the apply functions
 #should use lapply - easiest to work with from notes
 random_walk3 <- function(n) {
+  set.seed(23)
+  rand <- runif(n)
   step_for <- lapply(1:n, function(i) {
     #lapply is basically our loop so back to sample from 1
     num_step <- sample(c(-1,1), size = 1)
     #conditonals still same so can use same if statements as loop, just copy 
     if (num_step == 1) {
-      if (runif(1) < 0.05) {
+      if (rand[i] < 0.05) {
         num_step <- 10
       } else {
         num_step <- 1
       }
     }
     if (num_step == -1) {
-      if (runif(1) < 0.20) {
+      if (rand[i] < 0.20) {
         num_step <- -3
       } else {
         num_step <- -1
@@ -160,24 +172,22 @@ random_walk3(10)
 random_walk3(1000)
 ```
 
+
 This had the unlist function then I looked it up more after <https://www.mjandrews.org/notes/functionals/>. 
+
+
+
 
 
 b. Demonstrate that the three versions can give the same result. Show this for both $n=10$ and $n=1000$. (You will need to add a way to control the randomization.)
 
 ```{r}
 #add a seed in this part to control for random
-set.seed(23)
 random_walk1(10)
-set.seed(23)
 random_walk2(10)
-set.seed(23)
 random_walk3(10)
-set.seed(23)
 random_walk1(1000)
-set.seed(23)
 random_walk2(1000)
-set.seed(23)
 random_walk3(1000)
 ```
 
