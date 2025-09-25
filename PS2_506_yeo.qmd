@@ -108,7 +108,7 @@ Using the built in vectorized functions in R. I used this <https://stackoverflow
 #| echo: true
 #built-in R vectorized functions
 random_walk2 <- function(n) {
-  #order doesn't matter, can replace
+  #order doesn't matter, can replace, have to do n time
   step_for <- sample(c(-1, 1), size = n, replace = TRUE)
   random_step <- runif(n)
   #can't use if statements, bc doing multiple values?
@@ -128,23 +128,63 @@ Using the apply function.
 
 ```{r}
 #using one of the apply functions
-
+#should use lapply - easiest to work with from notes
+random_walk3 <- function(n) {
+  step_for <- lapply(1:n, function(i) {
+    #lapply is basically our loop so back to sample from 1
+    num_step <- sample(c(-1,1), size = 1)
+    #conditonals still same so can use same if statements as loop, just copy 
+    if (num_step == 1) {
+      if (runif(1) < 0.05) {
+        num_step <- 10
+      } else {
+        num_step <- 1
+      }
+    }
+    if (num_step == -1) {
+      if (runif(1) < 0.20) {
+        num_step <- -3
+      } else {
+        num_step <- -1
+      }
+    }
+    return(num_step)
+  })
+  #lapply turns things into a list but we want a vector so have to unlist it
+  #lapply func all in the step_for variable so we want this to be unlisted
+  steps <- unlist(step_for)
+  #add up steps to get final position like in the second random walk func
+  sum(steps)
+}
+random_walk3(10)
+random_walk3(1000)
 ```
 
+This had the unlist function then I looked it up more after <https://www.mjandrews.org/notes/functionals/>. 
 
 
-
-b. Demonstrate that the three versions can give the same result. Show this for both $n=10$ and $n=100$. (You will need to add a way to control the randomization.)
+b. Demonstrate that the three versions can give the same result. Show this for both $n=10$ and $n=1000$. (You will need to add a way to control the randomization.)
 
 ```{r}
 #add a seed in this part to control for random
-
+set.seed(23)
+random_walk1(10)
+set.seed(23)
+random_walk2(10)
+set.seed(23)
+random_walk3(10)
+set.seed(23)
+random_walk1(1000)
+set.seed(23)
+random_walk2(1000)
+set.seed(23)
+random_walk3(1000)
 ```
 
 c. Use the `microbenchmark` package to clearly demonstrate the speed of the implementations. Compare performance with a low input (1,000) and a large input (100,000). Discuss the results.
 
 ```{r}
-install.packages("microbenchmark")
+#install.packages("microbenchmark")
 ```
 
 ```{r}
@@ -155,7 +195,6 @@ library("microbenchmark")
 d. What is the probability that the random walk ends at 0 if the number of steps is $10$? $100$? $1000$? Defend your answers with evidence based upon a Monte Carlo simulation.
 
 ```{r}
-#| echo: true
 
 ```
 
@@ -176,30 +215,35 @@ Accomplish this without using any loops.
 ```{r}
 #| echo: true
 library(stats)
-set.seed(23)
 #rpois(n, lambda = 1): 00:00 - 07:00
 #rnorm(n, mean = 60, sd = 12): 08:00 & 17:00
 #rpois(n, lambda = 8): 09:00 - 16:00
 #rpois(n, lambda = 12): 18:00 - 23:00
 n <- 100000
-#realized this is just one hours rather than the eight I thought it was so I have to use matrices
-midnight_to_seven_matrix <- matrix(rpois(n * 8, lambda = 1), nrow = n, ncol = 8)
+#realized this is just one hours rather than the eight I thought it was 
+  #so I have to use matrices
+midnight_to_seven_matrix <- matrix(rpois(n * 8, lambda = 1), 
+                                   nrow = n, ncol = 8)
 midnight_to_seven_day <- rowSums(midnight_to_seven_matrix)
 
-#rush hour is just two hours, 8 and 17
-rush_hour_matrix <- matrix(rnorm(n * 2, mean = 60, sd = sqrt(12)), nrow = n, ncol = 2)
+#rush hour is just two hours, 8 and 17, not continuous in this time range
+rush_hour_matrix <- matrix(rnorm(n * 2, mean = 60, sd = sqrt(12)), 
+                           nrow = n, ncol = 2)
 #normal gives negative values so we have to deal with this
 rush_hour_matrix <- pmax(rush_hour_matrix, 0)
 rush_hour_day <- rowSums(rush_hour_matrix)
 
-nine_to_four_matrix <- matrix(rpois(n * 8, lambda = 8), nrow = n, ncol = 8)
+nine_to_four_matrix <- matrix(rpois(n * 8, lambda = 8), 
+                              nrow = n, ncol = 8)
 nine_to_four_day <- rowSums(nine_to_four_matrix)
 
-six_to_eleven_matrix <- matrix(rpois(n * 6, lambda = 12), nrow = n, ncol = 6)
+six_to_eleven_matrix <- matrix(rpois(n * 6, lambda = 12), 
+                               nrow = n, ncol = 6)
 six_to_eleven_day <- rowSums(six_to_eleven_matrix)
 
 #8 + 2 + 8 + 6 = 24 check
-total_car_pass <- midnight_to_seven_day + rush_hour_day + nine_to_four_day + six_to_eleven_day
+total_car_pass <- midnight_to_seven_day + rush_hour_day 
+                  + nine_to_four_day + six_to_eleven_day
 mean(total_car_pass)
 ```
 The average number of cars that pass by this intersection per day is 264 cars, rounding down from the value we found of $264.04$. 
@@ -242,7 +286,7 @@ b. For each of the following variables, examine their distribution. Determine wh
 
 For each variable (view counts, like counts, dislike counts, favorite counts, comment counts), report which category it falls in. If it requires a transformation, carry such a transformation out and use that transformation going forward.
 
-In order to see if these variables are appropriate to use in a linear regression model we want to look at the distribution or density of values in that variable and see if it looks roughly normal, which comes from the fact that ... I will be using histograms because I think they are easier to make and deal with.
+In order to see if these variables are appropriate to use in a linear regression model we want to look at the distribution or density of values in that variable and see if it looks roughly normal, which comes from the fact that the linear regression analysis requires all variables to be multivariate normal and the easiest way to check this is using a histogram or QQ plot (<https://www.statisticssolutions.com/free-resources/directory-of-statistical-analyses/assumptions-of-linear-regression/>). I will be using histograms because I think they are easier to make and deal with. If the data does not follow a normal distribution, a non-linear transformation (e.g., log-transformation) can fix the issue.
 
 ```{r}
 #| echo: true
@@ -301,28 +345,36 @@ Discuss the results. Identify the direction of any statistically significant res
 ```{r}
 #| echo: true
 #view counts, like counts, dislike counts, favorite counts, comment counts
-view_count_lm <- lm(view_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+view_count_lm <- lm(view_count ~ funny + show_product_quickly 
+                + patriotic + celebrity + danger + animals 
+                + use_sex + year, data = youtube)
 summary(view_count_lm)
 ```
 For the view count, there are no statistically significant results with the seven binary flags for characteristics of the ads.
 
 ```{r}
 #| echo: true
-like_count_lm <- lm(like_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+like_count_lm <- lm(like_count ~ funny + show_product_quickly 
+                    + patriotic + celebrity + danger + animals 
+                    + use_sex + year, data = youtube)
 summary(like_count_lm)
 ```
 For like count, there is only one statistically significant variable at the $0.05$ value which is year, not any of the binary flags for the characteristics for the ads. The danger flag has a p-value of $0.0886$, this doesn't quite meet the $0.05$ significance cut off, but it would be significant if we were testing it at the $0.1$ cut off, so I will discuss this too. In context, this means that ads flagged as dangerous see an increase of $0.63895$ log units in like count, holding all the other characteristics constant. For year, the coefficient of $0.007685$ indicates that each additional year has an increase of $0.07685$ log units in like count, controlling for all other predictors in the model.
 
 ```{r}
 #| echo: true
-dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+dislike_count_lm <- lm(dislike_count ~ funny + show_product_quickly 
+                        + patriotic + celebrity + danger + animals 
+                        + use_sex + year, data = youtube)
 summary(dislike_count_lm)
 ```
 For the dislike count, just like the like count, the only significant result is year, if the cutoff is $0.05$. If we went up to the $0.1$ cutoff, patriotic would become significant as well. In context, this means that, holding all other characteristics constant, ads flagged as patriotic are associated with an increase of about 0.814 log units in dislike count. For year, the coefficient of $0.09207$ indicates that each additional year has an increase of $0.09207$ log units in dislike count, controlling for all other predictors in the model.
 
 ```{r}
 #| echo: true
-comment_count_lm <- lm(comment_count ~ funny + show_product_quickly + patriotic + celebrity + danger + animals + use_sex + year, data = youtube)
+comment_count_lm <- lm(comment_count ~ funny + show_product_quickly 
+                        + patriotic + celebrity + danger + animals 
+                        + use_sex + year, data = youtube)
 summary(comment_count_lm)
 ```
 For the comment count, there are not any significant results at the $0.05$ cut off but there are some at the $0.1$ cut off. The variables significant at the $0.1$ level are patriotic and year. Holding all other characteristics constant, ads flagged as patriotic have an increase of about 0.667 log units in comment count. For year, the coefficient of $0.05034$ indicates that each additional year has an increase of $0.05034$ log units in comment count, controlling for all other predictors in the model.
