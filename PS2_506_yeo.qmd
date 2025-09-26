@@ -67,6 +67,7 @@ a. Implement the random walk in these three versions: 1. using a loop, 2. using 
 Using the loop which is what I did above so just copy/pasting.
 
 ```{r}
+#| echo: true
 #loop is what we just did so just using the same code w/ diff name
 random_walk1 <- function(n) {
   position <- 0 
@@ -108,16 +109,13 @@ Using the built in vectorized functions in R. I used this <https://stackoverflow
 
 
 ```{r}
+#| echo: true
 #built-in R vectorized functions
 random_walk2 <- function(n) {
   #order doesn't matter, can replace, have to do n time
   set.seed(23)
   random_step <- runif(n)
   step_for <- sample(c(-1, 1), size = n, replace = TRUE)
-  # print(random_step)
-  #random_step2 <- runif(n)
-  #print(random_step2)
-#0.8659590 0.7014217 0.3904731 0.3147697 0.8459473 0.1392785 0.5181206 0.5935508 0.9424617 0.6280196
   #can't use if statements, bc doing multiple values?
   #same uniform conditions as the loop, conditional check with square bracket 
   step_for[step_for == 1 & random_step < 0.05]  <- 10
@@ -137,6 +135,7 @@ random_walk2(1000)
 Using the apply function.
 
 ```{r}
+#| echo: true
 #using one of the apply functions
 #should use lapply - easiest to work with from notes
 random_walk3 <- function(n) {
@@ -172,16 +171,13 @@ random_walk3(10)
 random_walk3(1000)
 ```
 
-
 This had the unlist function then I looked it up more after <https://www.mjandrews.org/notes/functionals/>. 
-
-
-
 
 
 b. Demonstrate that the three versions can give the same result. Show this for both $n=10$ and $n=1000$. (You will need to add a way to control the randomization.)
 
 ```{r}
+#| echo: true
 #add a seed in this part to control for random
 random_walk1(10)
 random_walk2(10)
@@ -198,15 +194,35 @@ c. Use the `microbenchmark` package to clearly demonstrate the speed of the impl
 ```
 
 ```{r}
+#| echo: true
 library("microbenchmark")
-
+microbenchmark(random_walk1(1000), random_walk2(1000), random_walk3(1000))
 ```
+
+```{r}
+#| echo: true
+microbenchmark(random_walk1(100000), random_walk2(100000), random_walk3(100000))
+```
+For $n=1000$, we first note the unit for this case is microseconds and with this it is shown that the vectorized function is the fastest then the for loop and lastly the lapply function. For the case when $n=100000$, the unit changes to milliseconds and took much longer to run than the first case. Again we see that the vectorized is the fastest, then the for loop, and lastly the lapply function. This matches what we discussed in class about run times with different versions of functions.
+
+
 
 d. What is the probability that the random walk ends at 0 if the number of steps is $10$? $100$? $1000$? Defend your answers with evidence based upon a Monte Carlo simulation.
 
 ```{r}
+#| echo: true
+set.seed(23) 
+sim <- 10000
+prob_zero <- function(n){
+  zero_end <- replicate(sim, random_walk(n))  
+  mean(zero_end == 0)  
+}
 
+prob_zero(10)     
+prob_zero(100)    
+prob_zero(1000)
 ```
+The probabilities that the random walk ends at 0 if the number of steps decreases as the sample size increases. This can be seen from the code above, which shows a simulation for the different $n$ values. The probability for ending at $0$ for $n=10$ is $.131$. The probability for ending at $0$ for $n=100$ is $.0215$. The probability is practically $0$ for $n=1000$, with probability $.006$. This happens because each additional step introduces more variability and the jumps in step size we make with the small probabilities make it increasingly unlikely that the sum of steps will exactly cancel out to 0.
 
 
 ## Problem 2
@@ -224,7 +240,6 @@ Accomplish this without using any loops.
 
 ```{r}
 #| echo: true
-library(stats)
 #rpois(n, lambda = 1): 00:00 - 07:00
 #rnorm(n, mean = 60, sd = 12): 08:00 & 17:00
 #rpois(n, lambda = 8): 09:00 - 16:00
@@ -252,11 +267,12 @@ six_to_eleven_matrix <- matrix(rpois(n * 6, lambda = 12),
 six_to_eleven_day <- rowSums(six_to_eleven_matrix)
 
 #8 + 2 + 8 + 6 = 24 check
-total_car_pass <- midnight_to_seven_day + rush_hour_day 
-                  + nine_to_four_day + six_to_eleven_day
-mean(total_car_pass)
+total_car_pass <- midnight_to_seven_day + rush_hour_day + nine_to_four_day + six_to_eleven_day
+print(mean(total_car_pass))
+
 ```
-The average number of cars that pass by this intersection per day is 264 cars, rounding down from the value we found of $264.04$. 
+
+The average number of cars that pass by this intersection per day is 264 cars, rounding down from the value we found of $264.0004$. 
 
 ## Problem 3
 
@@ -394,10 +410,9 @@ For the comment count, there are not any significant results at the $0.05$ cut o
 d. Consider only the outcome of view counts. Calculate $\hat{\beta}_1$ manually (without using `lm`) by first creating a proper design matrix, then using matrix algebra to estimate $\beta$. Confirm that you get the same result as `lm` did in part c.
 
 ```{r}
-#| echo: true
 #use the formula beta = (X^T X)^{-1} X^T y
 #make x matrix
-#keep getting NA for all of them? get rid of the NAs?
+#keep getting NA for all of them? get rid of the NAs
 youtube <- na.omit(youtube[, c("funny", 
                                 "show_product_quickly", 
                                 "patriotic",
@@ -413,4 +428,4 @@ y <- youtube$view_count
 beta_hat_1 <- solve(t(X) %*% X) %*% t(X) %*% y
 beta_hat_1
 ```
-This matches the output we got for the linear regression model for view count! I had issues with all the variables being NA, which came from NAs still being present in our predictors so had to drop these (this is done automatically in lm so we have to do it manually). 
+This matches the output we got for the linear regression model for view count, just has more decimal places in this case. I had issues with all the variables being NA, which came from NAs still being present in our predictors so had to drop these (this is done automatically in lm so we have to do it manually). 
